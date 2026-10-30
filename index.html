@@ -63,10 +63,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 /* 본문 */
 .wrap{max-width:1040px;margin:0 auto;padding:40px 20px 64px}
 .bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
-.tabs{display:flex;gap:8px}
-.tab{font:inherit;font-weight:700;font-size:16px;cursor:pointer;padding:10px 24px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
-.tab[aria-selected="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
 .count{color:var(--muted);font-size:15px}
+.sec{margin:0;font-size:22px;font-weight:700;color:var(--text)}
 
 .list{list-style:none;margin:0;padding:0;border-top:2px solid var(--purple)}
 .item{border-bottom:1px solid var(--line)}
@@ -89,6 +87,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .player{display:none;padding:0 4px 24px 64px}
 .item.on .player{display:block}
 .frame{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:16px;overflow:hidden}
+.frame.audio{aspect-ratio:auto;background:var(--surface);border:1px solid var(--line);padding:14px}
+.frame.audio audio{display:block;width:100%}
 .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .open{display:inline-block;margin-top:10px;color:var(--purple-text);font-size:14px}
 .empty{padding:56px 8px;text-align:center;color:var(--muted);border-bottom:1px solid var(--line);background:var(--surface)}
@@ -124,33 +124,26 @@ footer{text-align:center;padding:32px 20px 40px;color:var(--muted);font-size:14p
 
 <main class="wrap">
   <div class="bar">
-    <div class="tabs" role="tablist" aria-label="참가 구분">
-      <button class="tab" role="tab" id="tab-student" data-tab="student" aria-selected="true" aria-controls="list">재학생</button>
-      <button class="tab" role="tab" id="tab-nazareth" data-tab="nazareth" aria-selected="false" aria-controls="list">나사렛</button>
-    </div>
+    <h2 class="sec">공연 순서</h2>
     <span class="count" id="count"></span>
   </div>
 
-  <ol class="list" id="list" role="tabpanel"></ol>
+  <ol class="list" id="list"></ol>
 </main>
 
-<footer>제출 순서대로 정렬했습니다. 괄호로 표시한 참가자는 참여 여부가 확정되지 않은 분입니다.</footer>
+<footer>공연 순서대로 정렬했습니다. 괄호로 표시한 참가자는 참여 여부가 확정되지 않은 분입니다.</footer>
 
 <script>
-var DATA = {
- student: [
-  { team: "런투유", song: "웨이홈 - 달리기", type: "MR", members: ["이영유","조아라","전유나","최안나","김혜린"], yt: "Mww16ZfMyPI" },
-  { team: "파라클레시스(위로)", song: "God 촛불하나(교회버전)", type: "MR", members: ["이소망","최승원","김용진","차상욱"], yt: "Rm6Wm6LQ5zU" },
-  { team: "트루포", song: "우리가 주를 더욱 사랑하고", type: "MR", members: ["전유나","임태희","오민서","박시온"], yt: "d_2-MpZE9OA" },
-  { team: "우산", song: "끝까지 남겠네", type: "MR", members: ["최승원","오민서","차상욱"], yt: "FpPiJjfa0rg" },
+var TEAMS = [
   { team: "세겹줄", song: "나로부터 시작되리", type: "MR", members: ["임태희","문예빈","최안나"], yt: "UkVoIeNWFug" },
-  { team: "군평 악단", song: "광야를 지나며", type: "반주", members: ["이효빈","김용진","(임태희)"], need: "피아노, 마이크 3개, 마이크 스탠드", yt: "" }
- ],
- nazareth: [
+  { team: "우산", song: "끝까지 남겠네", type: "MR", members: ["최승원","오민서","차상욱"], yt: "", audio: "usan-mr.mp3" },
   { team: "J&J", song: "내가 소망하는 아버지 나라", type: "반주", members: ["김준원","최재혁"], need: "건반", yt: "" },
-  { team: "ZOOM", song: "CCC 여름수련회 메들리", type: "반주", members: ["주예은","최재혁","박지하","조은비","이요한"], need: "건반", yt: "" }
- ]
-};
+  { team: "파라클레시스(위로)", song: "God 촛불하나(교회버전)", type: "MR", members: ["이소망","최승원","김용진","차상욱"], yt: "Rm6Wm6LQ5zU" },
+  { team: "런투유", song: "웨이홈 - 달리기", type: "MR", members: ["이영유","조아라","전유나","최안나","김혜린"], yt: "Mww16ZfMyPI" },
+  { team: "군평 악단", song: "광야를 지나며", type: "반주", members: ["이효빈","김용진","(임태희)"], need: "피아노, 마이크 3개, 마이크 스탠드", yt: "" },
+  { team: "ZOOM", song: "CCC 여름수련회 메들리", type: "반주", members: ["주예은","최재혁","박지하","조은비","이요한"], need: "건반", yt: "" },
+  { team: "트루포", song: "우리가 주를 더욱 사랑하고", type: "MR", members: ["전유나","임태희","오민서","박시온"], yt: "d_2-MpZE9OA" }
+];
 
 var list = document.getElementById("list");
 var countEl = document.getElementById("count");
@@ -166,29 +159,22 @@ function closeAll() {
   list.querySelectorAll(".item.on").forEach(function (it) {
     it.classList.remove("on");
     var f = it.querySelector(".frame");
-    if (f) f.innerHTML = "";
+    if (f) {
+      f.querySelectorAll("audio").forEach(function (x) { try { x.pause(); } catch (e) {} });
+      f.innerHTML = "";
+    }
     var b = it.querySelector(".play");
     if (b) { b.setAttribute("aria-expanded", "false"); b.setAttribute("aria-label", it.dataset.song + " 재생"); b.innerHTML = PLAY; }
   });
 }
 
+var IS_WEB = location.protocol === "http:" || location.protocol === "https:";
 var PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>';
 var STOP = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
 
-function render(tab) {
- closeAll();
+function render() {
  list.innerHTML = "";
- var TEAMS = DATA[tab] || [];
- countEl.textContent = (tab === "nazareth" ? "나사렛 " : "재학생 ") + TEAMS.length + "팀";
- document.querySelectorAll(".tab").forEach(function (b) {
-   b.setAttribute("aria-selected", b.dataset.tab === tab ? "true" : "false");
- });
- list.setAttribute("aria-labelledby", "tab-" + tab);
- if (!TEAMS.length) {
-   var e = el("li", "empty", "나사렛 팀 자료는 아직 준비 중입니다. 곧 업데이트됩니다.");
-   list.appendChild(e);
-   return;
- }
+ countEl.textContent = "총 " + TEAMS.length + "팀";
 TEAMS.forEach(function (t, i) {
   var li = el("li", "item");
   li.dataset.song = t.song;
@@ -207,7 +193,7 @@ TEAMS.forEach(function (t, i) {
   info.appendChild(ms);
   row.appendChild(info);
 
-  if (t.yt) {
+  if (t.yt || t.audio) {
     var btn = el("button", "play");
     btn.type = "button";
     btn.innerHTML = PLAY;
@@ -216,17 +202,33 @@ TEAMS.forEach(function (t, i) {
     row.appendChild(btn);
 
     var player = el("div", "player");
-    var frame = el("div", "frame");
+    var frame = el("div", t.audio ? "frame audio" : "frame");
     player.appendChild(frame);
-    var a = el("a", "open", "오류가 뜨면 여기를 눌러 YouTube에서 재생");
-    a.href = "https://www.youtube.com/watch?v=" + t.yt;
-    a.target = "_blank"; a.rel = "noopener";
-    player.appendChild(a);
+    if (t.yt) {
+      var a = el("a", "open", "오류가 뜨면 여기를 눌러 YouTube에서 재생");
+      a.href = "https://www.youtube.com/watch?v=" + t.yt;
+      a.target = "_blank"; a.rel = "noopener";
+      player.appendChild(a);
+    }
 
     btn.addEventListener("click", function () {
+      if (t.yt && !IS_WEB) {
+        window.open("https://www.youtube.com/watch?v=" + t.yt, "_blank", "noopener");
+        return;
+      }
       var wasOn = li.classList.contains("on");
       closeAll();
       if (wasOn) return;
+      if (t.audio) {
+        var au = document.createElement("audio");
+        au.src = t.audio;
+        au.controls = true;
+        au.preload = "auto";
+        au.setAttribute("aria-label", t.team + " - " + t.song + " MR");
+        frame.appendChild(au);
+        var pr = au.play();
+        if (pr && pr.catch) pr.catch(function () {});
+      } else {
       var ifr = document.createElement("iframe");
       ifr.src = "https://www.youtube.com/embed/" + t.yt + "?autoplay=1&rel=0&playsinline=1&origin=" + encodeURIComponent(location.origin);
       ifr.title = t.team + " - " + t.song;
@@ -234,6 +236,7 @@ TEAMS.forEach(function (t, i) {
       ifr.allowFullscreen = true;
       ifr.referrerPolicy = "strict-origin-when-cross-origin";
       frame.appendChild(ifr);
+      }
       li.classList.add("on");
       btn.setAttribute("aria-expanded", "true");
       btn.setAttribute("aria-label", t.song + " 정지");
@@ -260,13 +263,7 @@ TEAMS.forEach(function (t, i) {
 });
 }
 
-document.querySelectorAll(".tab").forEach(function (b) {
-  b.addEventListener("click", function () {
-    render(b.dataset.tab);
-    try { history.replaceState(null, "", "#" + b.dataset.tab); } catch (e) {}
-  });
-});
-render(location.hash === "#nazareth" ? "nazareth" : "student");
+render();
 
 document.getElementById("theme").addEventListener("click", function () {
   var root = document.documentElement;
